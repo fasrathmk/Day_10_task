@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Password Strength Checker</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+
+<body class="min-h-screen bg-slate-100 flex items-center justify-center p-5 text-slate-900">
+
+  <!-- Main card -->
+  <main class="w-full max-w-md rounded-3xl bg-white p-7 sm:p-9 shadow-xl">
+
+    <p class="text-xs font-bold uppercase tracking-widest text-indigo-600">
+      JavaScript Practice
+    </p>
+
+    <h1 class="mt-3 text-3xl font-bold">
+      Password Strength Checker
+    </h1>
+
+    <p class="mt-3 text-sm leading-6 text-slate-600">
+      Type a sample password to check its strength.
+    </p>
+
+    <!-- Password input -->
+    <label for="password" class="mt-7 block text-sm font-semibold">
+      Password
+    </label>
+
+    <input
+      id="password"
+      type="password"
+      autocomplete="off"
+      spellcheck="false"
+      aria-describedby="message rules"
+      placeholder="Enter a sample password"
+      class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3
+             outline-none focus:border-indigo-500 focus:ring-2
+             focus:ring-indigo-200"
+    >
+
+    <!-- Strength label -->
+    <div class="mt-5 flex justify-between text-sm">
+      <span class="font-semibold">Strength</span>
+
+      <span id="strengthLabel" class="font-semibold">
+        Not checked
+      </span>
+    </div>
+
+    <!-- Progress bar -->
+    <div
+      id="meter"
+      role="progressbar"
+      aria-label="Password strength"
+      aria-valuemin="0"
+      aria-valuemax="100"
+      aria-valuenow="0"
+      aria-valuetext="Not checked"
+      class="mt-2 h-2.5 overflow-hidden rounded-full bg-slate-200"
+    >
+      <div
+        id="strengthBar"
+        class="h-full rounded-full transition-all duration-300
+               motion-reduce:transition-none"
+        style="width: 0%; background-color: #94a3b8;"
+      ></div>
+    </div>
+
+    <!-- Validation message -->
+    <p
+      id="message"
+      role="status"
+      class="mt-3 text-sm leading-6 text-slate-600"
+    >
+      Enter a password to begin.
+    </p>
+
+    <!-- Password requirements -->
+    <ul
+      id="rules"
+      class="mt-5 space-y-2 border-t border-slate-100 pt-5
+             text-sm text-slate-600"
+    >
+      <li id="lengthRule">○ At least 8 characters</li>
+      <li id="lowerRule">○ A lowercase letter (a-z)</li>
+      <li id="upperRule">○ An uppercase letter (A-Z)</li>
+      <li id="numberRule">○ A number (0-9)</li>
+      <li id="symbolRule">○ A special character (!@#$...)</li>
+    </ul>
+
+    <p class="mt-6 text-xs leading-5 text-slate-500">
+      Learning demo: this rating checks simple rules, not real-world
+      password security. Use sample passwords.
+    </p>
+
+  </main>
+
+  <script>
+    // 1. Select the HTML elements.
+    const passwordInput = document.getElementById("password");
+    const strengthBar = document.getElementById("strengthBar");
+    const strengthLabel = document.getElementById("strengthLabel");
+    const message = document.getElementById("message");
+    const meter = document.getElementById("meter");
+
+    // 2. Check the password whenever the input changes.
+    passwordInput.addEventListener("input", checkPassword);
+
+    function checkPassword() {
+      const password = passwordInput.value;
+
+      // 3. Check the five password requirements.
+      // match() searches the string for a pattern.
+      // Boolean() converts the result into true or false.
+      const checks = [
+        {
+          id: "lengthRule",
+          passed: password.length >= 8,
+          text: "At least 8 characters"
+        },
+        {
+          id: "lowerRule",
+          passed: Boolean(password.match(/[a-z]/)),
+          text: "A lowercase letter (a-z)"
+        },
+        {
+          id: "upperRule",
+          passed: Boolean(password.match(/[A-Z]/)),
+          text: "An uppercase letter (A-Z)"
+        },
+        {
+          id: "numberRule",
+          passed: Boolean(password.match(/[0-9]/)),
+          text: "A number (0-9)"
+        },
+        {
+          id: "symbolRule",
+          passed: Boolean(password.match(/[^a-zA-Z0-9\s]/)),
+          text: "A special character (!@#$...)"
+        }
+      ];
+
+      let score = 0;
+      const missing = [];
+
+      // 4. Update the checklist and count satisfied requirements.
+      checks.forEach(function (check) {
+        const item = document.getElementById(check.id);
+
+        if (check.passed) {
+          score++;
+
+          item.textContent = "✓ " + check.text;
+          item.style.color = "#15803d";
+        } else {
+          missing.push(check.text.toLowerCase());
+
+          item.textContent = "○ " + check.text;
+          item.style.color = "#475569";
+        }
+      });
+
+      let label;
+      let color;
+      let width;
+      let feedback;
+
+      // 5. Determine the strength using conditional statements.
+      if (password.length === 0) {
+        label = "Not checked";
+        color = "#64748b";
+        width = 0;
+        feedback = "Enter a password to begin.";
+
+      } else if (password.length < 8 || score <= 2) {
+        label = "Weak";
+        color = "#dc2626";
+        width = 33;
+        feedback = "Try adding: " + missing.join(", ") + ".";
+
+      } else if (score < 5) {
+        label = "Medium";
+        color = "#eab308";
+        width = 66;
+        feedback = "Try adding: " + missing.join(", ") + ".";
+
+      } else {
+        label = "Strong";
+        color = "#16a34a";
+        width = 100;
+        feedback = "All five rules are satisfied.";
+      }
+
+      // 6. Update the page using DOM manipulation.
+      strengthLabel.textContent = label;
+
+      // Darker yellow text is easier to read on a white background.
+      strengthLabel.style.color =
+        label === "Medium" ? "#854d0e" : color;
+
+      strengthBar.style.width = width + "%";
+      strengthBar.style.backgroundColor = color;
+
+      message.textContent = feedback;
+
+      // Update accessibility information.
+      meter.setAttribute("aria-valuenow", width);
+      meter.setAttribute("aria-valuetext", label);
+    }
+
+    // Set the initial state when the page loads.
+    checkPassword();
+  </script>
+
+</body>
+</html>
